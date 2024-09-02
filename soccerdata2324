@@ -1,0 +1,51 @@
+import os
+import pandas as pd
+import streamlit as st
+
+# Function to gather files from all subfolders
+def gather_files(base_dir):
+    # Gather all files from all subdirectories
+    all_files = []
+    for root, dirs, files in os.walk(base_dir):
+        for file in files:
+            file_path = os.path.join(root, file)
+            all_files.append(file_path)
+    return all_files
+
+# Streamlit app
+st.title("Player Comparison Tool")
+
+# Step 1: Select the base directory
+base_dir = st.text_input("Enter the base directory")
+if st.button("Gather Files"):
+    all_files = gather_files(base_dir)
+    st.write(f"Total files found: {len(all_files)}")
+    
+    # Step 2: Display the files and select which ones to analyze
+    file_choices = st.multiselect("Select files for comparison", all_files)
+    
+    # Step 3: Load and process the selected files
+    if len(file_choices) > 0:
+        # Create a dataframe to store all player data
+        all_data = pd.DataFrame()
+
+        for file in file_choices:
+            # Assume the file is a CSV
+            try:
+                df = pd.read_csv(file)
+                df['File'] = file  # Add a column to indicate the source file
+                all_data = pd.concat([all_data, df], ignore_index=True)
+            except Exception as e:
+                st.error(f"Failed to read {file}: {e}")
+
+        # Step 4: Perform visualizations (same as your previous code)
+        if not all_data.empty:
+            st.write("Data loaded successfully. Proceeding to visualizations.")
+
+            # Visualization example: Histogram of a selected numeric column
+            numeric_cols = all_data.select_dtypes(include='number').columns
+            selected_column = st.selectbox("Select a column for histogram", numeric_cols)
+            st.bar_chart(all_data[selected_column].value_counts())
+
+            # Additional visualizations based on your existing code
+
